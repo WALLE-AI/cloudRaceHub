@@ -1,8 +1,8 @@
 import os
 import uuid
+import loguru
 import numpy as np
 from urllib3.exceptions import HTTPError
-os.system('pip install dashscope  modelscope oss2 -U')
 
 from argparse import ArgumentParser
 from pathlib import Path
@@ -20,6 +20,9 @@ import requests
 from http import HTTPStatus
 from dashscope import MultiModalConversation
 import dashscope
+
+from audio_models_tts import synthesizer_with_llm
+from text_generator_image import execute_image_gen
 API_KEY = os.environ['API_KEY']
 dashscope.api_key = API_KEY
 
@@ -219,13 +222,21 @@ def _launch_demo(args):
         for _chatbot in _chatbot_gen:
             yield _chatbot
 
+        
     def add_text(history, task_history, text):
-        task_text = text
-        history = history if history is not None else []
-        task_history = task_history if task_history is not None else []
-        history = history + [(_parse_text(text), None)]
-        task_history = task_history + [(task_text, None)]
-        return history, task_history, ""
+        if text.startswith("/tts"):
+            text = text.split("/tts/")[-1]
+            synthesizer_with_llm(text)
+        elif text.startswith("/gen_image"):
+            text = text.split("/gen_image/")[-1]
+            execute_image_gen(text)
+        else:
+            task_text = text
+            history = history if history is not None else []
+            task_history = task_history if task_history is not None else []
+            history = history + [(_parse_text(text), None)]
+            task_history = task_history + [(task_text, None)]
+            return history, task_history, ""
 
     def add_file(history, task_history, file):
         history = history if history is not None else []

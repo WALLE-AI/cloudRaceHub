@@ -44,7 +44,7 @@ class Callback(ResultCallback):
         self._stream.write(data)
 
 
-def synthesizer_with_llm():
+def synthesizer_with_llm(query:str):
     callback = Callback()
     synthesizer = SpeechSynthesizer(
         model=model,
@@ -53,7 +53,7 @@ def synthesizer_with_llm():
         callback=callback,
     )
 
-    messages = [{"role": "user", "content": "请介绍一下你自己"}]
+    messages = [{"role": "user", "content": query}]
     responses = Generation.call(
         model="qwen-turbo",
         messages=messages,
